@@ -161,7 +161,7 @@ def main():
     global DISPLAYSURF, mousex, mousey
     pygame.init()
     clicks = 0
-    g = Grid(5, 5)
+    g = Grid(80, 80)
     DISPLAYSURF = pygame.display.set_mode((W_HEIGHT, W_WIDTH))
     g.displayGrid()
     while True:
