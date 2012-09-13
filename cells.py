@@ -40,11 +40,14 @@ class Cell():
     rRect = None
     lRect = None
     active = False
-    def __init__(self, u, d, l, r, size, xPos, yPos):
+    dColour = WHITE
+    aColour = RED
+    def __init__(self, u, d, l, r, aColour, size, xPos, yPos):
         self.u = u
         self.d = d
         self.r = r
         self.l = l
+        self.aColour = aColour
         self.size = size
         self.xPos = xPos
         self.yPos = yPos
@@ -88,15 +91,18 @@ class Grid():
         self.width = width
         self.height = height
         self.cellSize = W_WIDTH/width
+        random.seed(666)
         for i in xrange(0, width):
             b = []
+            # Try seeding the random to produce the same cells
             for j in xrange(0, height):
                 print "New cell!", i, j
                 tempU = random.choice([True, False])
                 tempD = random.choice([True, False])
                 tempR = random.choice([True, False])
                 tempL = random.choice([True, False])
-                b.append(Cell(tempU, tempD, tempR, tempL, self.cellSize, i, j))
+                tempC = random.choice([RED, GREEN, BLUE, YELLOW, DARKGRAY])
+                b.append(Cell(tempU, tempD, tempR, tempL, tempC, self.cellSize, i, j))
             a.append(b)
         self.array = a # The self keyword is essential to the array access
     
@@ -108,9 +114,9 @@ class Grid():
         for row in self.array:
             for cell in row:
                 if cell.active:
-                    pygame.draw.rect(DISPLAYSURF, colours[0], cell.mainRect)
+                    pygame.draw.rect(DISPLAYSURF, cell.aColour, cell.mainRect)
                 else:
-                    pygame.draw.rect(DISPLAYSURF, colours[2], cell.mainRect)
+                    pygame.draw.rect(DISPLAYSURF, cell.dColour, cell.mainRect)
                 #only draw these at all if they're true \/
                 #Are they even necessary though?
                 #if cell.u:
@@ -140,7 +146,11 @@ class Grid():
             if cell.l:
                 if cell.xPos > 0:
                     self.activateCell(xPos-1, yPos)
-          
+            time.sleep(.0001)
+            self.displayGrid()
+            pygame.display.update()
+            
+
     def checkComplete(self):
         for row in self.array:
             for cell in row:
@@ -161,7 +171,7 @@ def main():
     global DISPLAYSURF, mousex, mousey
     pygame.init()
     clicks = 0
-    g = Grid(80, 80)
+    g = Grid(40, 40)
     DISPLAYSURF = pygame.display.set_mode((W_HEIGHT, W_WIDTH))
     g.displayGrid()
     while True:
@@ -170,7 +180,7 @@ def main():
         for e in pygame.event.get():
             if e.type == KEYDOWN:
                 if e.key == K_q:
-                    raise SystemExit
+                    return
             if e.type == MOUSEMOTION:
                 mousex, mousey = e.pos
             if e.type == MOUSEBUTTONUP:
