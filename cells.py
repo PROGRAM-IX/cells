@@ -1,7 +1,7 @@
 import numpy as np
+import sshot
 import random, sys, time, pygame
 from pygame.locals import *
-
 
 DISPLAYSURF = None
 #                R    G    B
@@ -27,64 +27,47 @@ mousex = 0
 mousey = 0
 
 class Cell():
-    size = 0
-    xPos = 0
-    yPos = 0
-    u = False
-    d = False
-    r = False
-    l = False
-    mainRect = None
-    uRect = None
-    dRect = None
-    rRect = None
-    lRect = None
-    active = False
-    dColour = WHITE
-    aColour = RED
-    def __init__(self, u, d, l, r, aColour, size, xPos, yPos):
+    def __init__(self, u, d, l, r, aColour, dColour, size, xPos, yPos):
         self.u = u
         self.d = d
         self.r = r
         self.l = l
+        self.active = False
         self.aColour = aColour
+        self.dColour = dColour
         self.size = size
         self.xPos = xPos
         self.yPos = yPos
-        print xPos, yPos, size
+        #print xPos, yPos, size
         self.mainRect = pygame.Rect(xPos*size, yPos*size, size, size)
         self.updateRects()
 
     def updateRects(self):
         if self.u:
             self.uRect = pygame.Rect(self.mainRect.x+(self.mainRect.width/2-2), self.mainRect.y+0, 4, 4)
-            print "Setting uRect"
+            #print "Setting uRect"
         else:
             self.uRect = pygame.Rect(self.mainRect.x+0, self.mainRect.y+0, 0, 0)
         
         if self.d:
             self.dRect = pygame.Rect(self.mainRect.x+(self.mainRect.width/2-2), self.mainRect.y+(self.mainRect.height-2), 4, 4)
-            print "Setting dRect"
+            #print "Setting dRect"
         else:
             self.dRect = pygame.Rect(self.mainRect.x+0, self.mainRect.y+0, 0, 0)
 
         if self.r:
             self.rRect = pygame.Rect(self.mainRect.x+(self.mainRect.width-2), self.mainRect.y+(self.mainRect.height/2-2), 4, 4)
-            print "Setting rRect"
+            #print "Setting rRect"
         else:
             self.rRect = pygame.Rect(self.mainRect.x+0, self.mainRect.y+0, 0, 0)
 
         if self.l:
             self.lRect = pygame.Rect(self.mainRect.x+0, self.mainRect.y+(self.mainRect.height/2-2), 4, 4)
-            print "Setting lRect"
+            #print "Setting lRect"
         else:
             self.lRect = pygame.Rect(self.mainRect.x+0, self.mainRect.y+0, 0, 0)
 
 class Grid():
-    array = []
-    cellSize = 0
-    width = 0
-    height = 0
     def __init__(self, width, height):
         global W_WIDTH, W_HEIGHT
         a = []
@@ -96,13 +79,16 @@ class Grid():
             b = []
             # Try seeding the random to produce the same cells
             for j in xrange(0, height):
-                print "New cell!", i, j
+                #print "New cell!", i, j
                 tempU = random.choice([True, False])
                 tempD = random.choice([True, False])
                 tempR = random.choice([True, False])
                 tempL = random.choice([True, False])
-                tempC = random.choice([RED, GREEN, BLUE, YELLOW, DARKGRAY])
-                b.append(Cell(tempU, tempD, tempR, tempL, tempC, self.cellSize, i, j))
+                #tempAC = random.choice([BRIGHTRED, BRIGHTGREEN, BRIGHTBLUE, BRIGHTYELLOW, LIGHTGRAY])
+                #tempDC = random.choice([RED, GREEN, BLUE, YELLOW, DARKGRAY])
+                tempAC = LIGHTGRAY
+                tempDC = RED
+                b.append(Cell(tempU, tempD, tempR, tempL, tempAC, tempDC, self.cellSize, i, j))
             a.append(b)
         self.array = a # The self keyword is essential to the array access
     
@@ -146,7 +132,7 @@ class Grid():
             if cell.l:
                 if cell.xPos > 0:
                     self.activateCell(xPos-1, yPos)
-            time.sleep(.0001)
+            time.sleep(.00001)
             self.displayGrid()
             pygame.display.update()
             
@@ -171,7 +157,7 @@ def main():
     global DISPLAYSURF, mousex, mousey
     pygame.init()
     clicks = 0
-    g = Grid(40, 40)
+    g = Grid(128, 128)
     DISPLAYSURF = pygame.display.set_mode((W_HEIGHT, W_WIDTH))
     g.displayGrid()
     while True:
@@ -181,6 +167,8 @@ def main():
             if e.type == KEYDOWN:
                 if e.key == K_q:
                     return
+                elif e.key == K_s:
+                    sshot.save_surface(DISPLAYSURF)
             if e.type == MOUSEMOTION:
                 mousex, mousey = e.pos
             if e.type == MOUSEBUTTONUP:
@@ -206,7 +194,6 @@ def main():
                                 #raise SystemExit
 
         pygame.display.update()
-        
                     
 
 
