@@ -1,5 +1,6 @@
 import numpy as np
 import sshot
+import threading
 import random, sys, time, pygame
 from pygame.locals import *
 
@@ -134,7 +135,7 @@ class Grid():
                     self.activateCell(xPos-1, yPos)
             time.sleep(.00001)
             self.displayGrid()
-            pygame.display.update()
+            #pygame.display.update()
             
 
     def checkComplete(self):
@@ -156,10 +157,12 @@ class Grid():
 def main():
     global DISPLAYSURF, mousex, mousey
     pygame.init()
-    clicks = 0
-    g = Grid(128, 128)
+    c = pygame.time.Clock() 
+    #clicks = 0
+    g = Grid(48, 48)
     DISPLAYSURF = pygame.display.set_mode((W_HEIGHT, W_WIDTH))
     g.displayGrid()
+
     while True:
         DISPLAYSURF.fill(bgColour)
         g.displayGrid()
@@ -173,28 +176,47 @@ def main():
                 mousex, mousey = e.pos
             if e.type == MOUSEBUTTONUP:
                 mousex, mousey = e.pos
-                for row in g.array:
-                    for cell in row:
-                        if cell.mainRect.collidepoint( (mousex, mousey) ):
-                            print "Cell at", cell.xPos, cell.yPos, "hit!"
-                            if e.button == 1:
-                                #cell.active = True
-                                if not cell.active:  
-                                    g.activateCell(cell.xPos, cell.yPos)
-                                    clicks += 1
+                b = e.button
+                t = T(g, mousex, mousey, b) # Make thread with this click
+                t.start() # Process click in thread
+            
+        pygame.display.update()
+        c.tick(40)
+                    
+class T(threading.Thread):
+    def __init__(self, g, mousex, mousey, b):
+        threading.Thread.__init__(self)
+        self.g = g
+        self.mousex = mousex
+        self.mousey = mousey
+        self.b = b
+    def run(self):
+        g = self.g
+        mousex = self.mousex
+        mousey = self.mousey
+        b = self.b
+        for row in g.array:
+            for cell in row:
+                if cell.mainRect.collidepoint( (mousex, mousey) ):
+                    print "Cell at", cell.xPos, cell.yPos, "hit!"
+                    if b == 1:
+                        #cell.active = True
+                        if not cell.active:  
+                            g.activateCell(cell.xPos, cell.yPos)
+                            #clicks += 1
 
-                            elif e.button == 3:
-                                if cell.active:
-                                    cell.active = False
-                                    clicks += 1
+                        elif b == 3:
+                            if cell.active:
+                                cell.active = False
+                                #clicks += 1
                             if g.checkComplete():
-                                print "You filled the grid in", clicks, "clicks!"
-                                clicks = 0
+                                #print "You filled the grid in", clicks, "clicks!"
+                                print "Done"
+                                #clicks = 0
                                 g.deactivateCells()
                                 #raise SystemExit
+    
 
-        pygame.display.update()
-                    
 
 
 if __name__ == '__main__':
